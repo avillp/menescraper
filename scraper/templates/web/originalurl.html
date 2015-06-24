@@ -1,0 +1,312 @@
+<!--
+MeneScraper is a big data project that monitors the social interactions of Meneame.
+Copyright (C) 2015  Arnau Villoslada
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-->
+
+{% extends "web/base.html" %}
+{% load staticfiles %}
+
+{% block logo-rowfluid %}
+<div class="row-fluid">
+    <a class="brand span2" href="{% if return_url %}{% url "index" %}?page={{ return_url }}{% else %}{% url "index" %}{% endif %}">
+        <span>
+            {% block logo %}
+            <img src="{% static "ico/menescraper_logo5.png" %}" />
+            {% endblock logo %}
+        </span>
+    </a>
+</div>
+{% endblock logo-rowfluid %}
+
+{% block title %}
+Menescraper - {{ original_url.title }}
+{% endblock title %}
+
+{% block links_menu %}
+<li>
+    <a class="dropmenu" href="{% url "index" %}">
+        <i class="icon-list"></i>
+        <span class="hidden-tablet">
+            Links
+        </span>
+    </a>
+    <ul>
+
+        <li>
+            <a class="submenu"
+            href="{% if return_url %}{% url "index" %}?page={{ return_url }}{% else %}{% url "index" %}{% endif %}">
+                <i class="icon-arrow-left"></i>
+                <span class="hidden-tablet">
+                    Go Back
+                </span>
+            </a>
+        </li>
+
+        <li>
+            <a class="submenu" href="{% url "original_url" original_url.id %}">
+                <i class="icon-info"></i>
+                <span class="hidden-tablet">
+                    Details
+                </span>
+            </a>
+        </li>
+
+    </ul>
+</li>
+{% endblock links_menu %}
+
+{% block content %}
+{% if invalid_form %}
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Oh snap!</strong> {{ invalid_form|striptags }}
+</div>
+{% endif %}
+
+<div class="row-fluid">	
+
+    <div class="box span12">
+            <div class="box-header">
+
+                    <h2>
+                        <a class="submenu" href="{% if return_url %}{% url "index" %}?page={{ return_url }}{% else %}{% url "index" %}{% endif %}">
+                            <i class="icon-arrow-left" style="background-color:#DB5800; text-decoration:none;" data-rel="tooltip" title="Go back"></i></a>
+                        <span class="break"></span>Information
+                    </h2>
+
+                <div class="box-icon">
+                    <a href="#" class="btn-minimize"><i class="icon-chevron-up"></i></a>
+                </div>
+            </div>
+
+        <div class="box-content">
+            <table class="table table-bordered table-striped">
+                <tr>
+                    <td>Title</td>
+                    <td>
+                        {{ original_url.title }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>URL</td>
+                    <td>
+                        <a href="{{ original_url.url }}" target="__blank">{{ original_url.url }}</a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Meneame URL</td>
+                    <td>
+                        <a href="{{ original_url.meneame_url }}" target="__blank">{{ original_url.meneame_url }}</a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>On front page</td>
+                    <td>
+                        {% if original_url.frontpage %}
+                         <span class="label label-success">True</span>
+                        {% else %}
+                        <span class="label label-important">False</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Publication date</td>
+                    <td>
+                        {{ original_url.pub_date }} - {{ original_url.pub_time|date:"H:i" }}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Front page date</td>
+                    <td>
+                        {% if original_url.frontpage %}
+                            {{ original_url.frontpage_date }} - {{ original_url.frontpage_time|date:"H:i" }}
+
+                        {% else %}
+                            Not in frontpage
+
+                        {% endif %}
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </div><!--/span-->
+</div><!--/row-->
+
+<div class="row-fluid">
+    <div class="box">
+        <div class="box-header" style="background-color:#FF6400;">
+
+            <h2>
+                <a href="#">
+                    <i class="icon-bar-chart btn-setting" style="background-color:#DB5800; text-decoration:none;"></i></a>
+                Interactions of <a href="#" class="btn-setting" data-rel="tooltip" title="Not happy with the display date? Change it" style="color: white;">{{ selected_date|date:"d-m-Y" }}</a>
+            </h2>
+
+            <div class="box-icon" style="background-color:#DB5800;">
+                <a href="#" class="btn-setting" data-rel="tooltip" title="Not happy with the display date? Change it"><i class="icon-calendar" style="border-left:#FF6400;"></i></a>
+                <a href="#" class="btn-minimize"><i class="icon-chevron-up" style="border-left:#FF6400;"></i></a>
+            </div>
+
+        </div>
+
+        <div class="box-content">
+            <div id="flotchart" class="center" style="height:300px"></div>
+        </div>
+    </div>
+</div><!--/row-->
+
+<!--/fluid-row-->
+<div class="modal hide fade" id="myModal">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>
+            Settings
+        </h3>
+    </div>
+
+    <form class="form-horizontal" action="{% url "change_date" %}" method="post">
+    {% csrf_token %}
+    <div class="modal-body">
+        <p>
+            <div class="control-group">
+                <label class="control-label" for="date01">Change chart date:</label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge datepicker" id="date" name="date" value="{{ selected_date|date:"m/d/Y" }}" />
+                </div>
+            </div>
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <input type="submit" class="btn btn-primary" value="Save changes">
+        <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+    </div>
+    </form>
+
+</div>
+
+<div class="clearfix"></div>
+
+</div>
+<!--/.fluid-container-->
+
+<script>
+function charts() {
+    var twitter_post = [
+        {% for int in social_int %}
+            {% if int %}
+                [{{ int.scan_date_ts }} * 1000, {{ int.post_twitter_int }}],
+            {% endif %}
+        {% endfor %}
+    ];
+
+    var facebook_post = [
+        {% for int in social_int %}
+            {% if int %}
+                [{{ int.scan_date_ts }} * 1000, {{ int.post_facebook_int }}],
+            {% endif %}
+        {% endfor %}
+    ];
+
+    var twitter_meneame = [
+        {% for int in social_int %}
+            {% if int %}
+                [{{ int.scan_date_ts }} * 1000, {{ int.meneame_twitter_int }}],
+            {% endif %}
+        {% endfor %}
+    ];
+
+    var facebook_meneame = [
+        {% for int in social_int %}
+            {% if int %}
+                [{{ int.scan_date_ts }} * 1000, {{ int.meneame_facebook_int }}],
+            {% endif %}
+        {% endfor %}
+    ];
+
+    {% if original_url.frontpage %}
+    var frontpage = [
+        {% if frontpage_chartline %}
+        [{{ frontpage_ts }} * 1000, {{ frontpage_yrange }}],
+        [{{ frontpage_ts }} * 1000, -1],
+        {% endif %}
+    ];
+    {% else %}
+    var frontpage = [];
+    {% endif %}
+
+
+    if (twitter_post.length == 0 && facebook_post.length == 0 && twitter_meneame.length == 0 && facebook_meneame.length == 0)
+        $('#flotchart').html("<center><h1>No data available</h1></center>");
+    else {
+        $.plot($("#flotchart"), [{
+            label: "Twitter - Post URL",
+            data: twitter_post
+        }, {
+            label: "Facebook - Post URL",
+            data: facebook_post
+        }, {
+            label: "Twitter - Meneame URL",
+            data: twitter_meneame
+        }, {
+            label: "Facebook - Meneame URL",
+            data: facebook_meneame
+        }, {
+            label: "Front Page",
+            data: frontpage
+        }], {
+            series: {
+                lines: {
+                    show: true
+                },
+                points: {
+                    show: true
+                }
+            },
+
+            xaxis: {
+                mode: "time",
+                timeformat: "%H:%M"
+            },
+            yaxis: {
+                max: {{ y_limit }},
+                min: 0
+            },
+
+
+            grid: {
+                tickColor: "#dddddd",
+                borderWidth: 0,
+                hoverable: true
+            },
+            tooltip: true,
+            tooltipOpts: {
+                content: "%x | %s | %y", // show percentages, rounding to 2 decimal places
+            },
+            colors: ["#FF0000", "#FFFF00", "#00FF00","#00FFFF","#0000FF"]
+        })
+    };
+}
+</script>
+{% endblock content %}

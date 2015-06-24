@@ -1,0 +1,214 @@
+<!--
+MeneScraper is a big data project that monitors the social interactions of Meneame.
+Copyright (C) 2015  Arnau Villoslada
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+-->
+
+{% extends "web/base.html" %}
+
+{% block content %}
+{% if listsettings_e1 %}
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Oh snap!</strong> {{ listsettings_e1|striptags }}
+</div>
+{% endif %}
+
+{% if listsettings_e2 %}
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Oh snap!</strong> {{ listsettings_e2|striptags }}
+</div>
+{% endif %}
+
+{% if listsettings_e3 %}
+<div class="alert alert-danger">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Oh snap!</strong> {{ listsettings_e3|striptags }}
+</div>
+{% endif %}
+
+
+<div class="row-fluid">
+
+    <div class="box span12">
+        <div class="box-header">
+            <h2>
+                <i class="icon-list"></i>
+                News
+            </h2>
+            <div class="box-icon" style="background-color:;">
+                 <a href="#" class="btn-setting" data-rel="tooltip" title="Did you know that you can configure me?"><i class="icon-filter"></i></a>
+                <a href="#" class="btn-minimize"><i class="icon-chevron-up"></i></a>
+                </a>
+            </div>
+        </div>
+        <div class="box-content">
+
+            <ul class="tickets">
+
+                {% for url in original_url %}
+                <li class="ticket">
+                    <a href="{% url "original_url" url.id %}" data-rel="tooltip" title="{{ url.title }}">
+                        <div class="left">
+                            <span class="status">
+                                {% if url.frontpage %}
+                                    <span class="label label-success">On frontpage</span>
+                                {% else %}
+                                    <span class="label label-warning">Pending</span>
+                                {% endif %}
+                            </span>
+                            <span class="date">{{ url.pub_date }} | {{ url.pub_time }}</span>
+                            <span class="title">{{ url.title|truncatechars:70 }}</span>
+                        </div>
+                        <div class="right">
+                            <span class="name">ID</span>
+                            <span class="number">[ #{{ url.id }} ]</span>
+                        </div>
+                    </a>
+                </li>
+                {% empty %}
+                <center>
+                    <h3> No objects found </h3>
+                </center>
+                {% endfor %}
+            </ul>
+
+            {% if is_paginated %}
+                <div class="pagination pagination-centered">
+                    <ul>
+
+                        {% if page_obj.has_previous %}
+                            <li>
+
+                                {# This if is to avoid having ?page=1. Just for the looks #}
+                                {% if page_obj.previous_page_number == 1 %}
+                                    <a href="{% url "index" %}">Previous
+                                {% else %}
+                                    <a href="{% url "index" %}?page={{ page_obj.previous_page_number }}">Previous
+                                {% endif %}
+                                </a>
+
+                            </li>
+
+                            {% if page_obj.number >= 3 %}
+                                <li>
+                                    <a href="{% url "index" %}">1</a>
+                                </li>
+                                <li class="disabled"><a href="#">...</a></li>
+                            {% endif %}
+
+                            <li>
+
+                                {# This if is to avoid having ?page=1. Just for the looks #}
+                                {% if page_obj.previous_page_number == 1 %}
+                                    <a href="{% url "index" %}">
+                                {% else %}
+                                    <a href="?page={{ page_obj.previous_page_number }}">
+                                {% endif %}
+
+                                    {{ page_obj.previous_page_number }}
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="active">
+                            <a href="#">{{ page_obj.number }}</a>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}">
+                                    {{ page_obj.next_page_number }}
+                                </a>
+                            </li>
+
+                            {% if page_obj.number <= paginator.num_pages|add:"-2" %}
+                            <li class="disabled"><a href="#">...</a></li>
+                            <li>
+                                <a href="?page={{ paginator.num_pages }}">
+                                    {{ paginator.num_pages }}
+                                </a>
+                            </li>
+                            {% endif %}
+
+                                <li>
+                                    <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endif %}
+
+        </div>
+    </div><!--/span-->
+
+</div><!--/row-->
+
+<div class="modal hide fade" id="myModal">
+
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>
+            Filter
+        </h3>
+    </div>
+
+    <form class="form-horizontal" action="{% url "change_settings" %}" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+
+
+            <div class="control-group">
+                <label class="control-label" for="search">Keywords:</label>
+                <div class="controls">
+                    <div class="input-prepend">
+                        <span class="add-on icon-search"></span><input name="search" size="16" type="text" value="{{ search }}" />
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <label class="control-label" for="records_per_page">Records per page:</label>
+                <div class="controls">
+                    <select name="records_per_page">
+                        <option value="10" {% if records_per_page == 10 %}selected="selected"{%endif%}>10</option>
+                        <option value="25" {% if records_per_page == 25 %}selected="selected"{%endif%}>25</option>
+                        <option value="50" {% if records_per_page == 50 %}selected="selected"{%endif%}>50</option>
+                        <option value="100" {% if records_per_page == 100 %}selected="selected"{%endif%}>100</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <label class="control-label">Frontpage:</label>
+                <label class="checkbox inline">
+                <input type="checkbox" name="frontpage_only" {% if frontpage_only %}checked{% endif %} />
+                </label>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <input type="submit" class="btn btn-primary" value="Save changes">
+            <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+        </div>
+    </form>
+
+</div>
+{% endblock content %}
