@@ -11,7 +11,7 @@ The required pip packages are in <b>requirements.txt</b><br>
 This project is made using Django (https://www.djangoproject.com/)<br>
 If you never used Django before I recomend taking it a look before trying to run your own menescraper.
 
-<h1>Installation</h1>
+<h1>For in case you want to run it yourself</h1>
 
 Clone the repository in a directory<br>
 Use <b>pip install -r requirements.txt</b> to install the needed dependencies.<br>
