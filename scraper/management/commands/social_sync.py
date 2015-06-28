@@ -105,7 +105,7 @@ def FacebookScan(encoded_url, use_proxies):
         # access token, that means the json is different and so a new function is required.
         facebook_req = urllib.urlopen(
             "https://graph.facebook.com/v2.3/{url}?access_token="
-            "CONFIGURE-ME: Add the your Facebook access token".format(url=encoded_url),
+            "CONFIGURE-ME: Add your own Facebook access token".format(url=encoded_url),
             proxies=oldest_proxy_dic,
         )
 
@@ -182,6 +182,36 @@ def FacebookScan(encoded_url, use_proxies):
 
         # Return False instead of the total interactions
         return False
+
+    # This checks if the Facebook API returned nothing for the requested URL
+    # This can happen if the URL is from facebook itself. I don't know why the facebook API
+    # does this.
+    if not "share" in facebook_json:
+
+        # Store the error in the errors model, it will probably spam the error model with this
+        # for a couple of days but it doesn't hurt.
+        error = Error(
+            error="URL: {url}\n"
+                "The Facebook API returned no shares.\n"
+                "This is known to happen if the URL in question is from Facebook itself".format(
+                    url=encoded_url,
+                ),
+            created_by="social_sync.py",
+        )
+        error.save()
+
+        # Tell the user what happend, never bad practice
+        print " The Facebook API returned no shares, setting it to 0"
+
+        # It returns 0 because this way it will not delete the social interaction entry.
+        # We can't get the facebook interactions for this URL but it's still of
+        # interest to get the twitter ones.
+        return 0
+
+    # PLEASE READ BEFORE ADDING MORE CODE BELOW:
+        # it is important that "if not 'share' in facebook_json" stays at the bottom.
+        # Because this 'if' returns 0 if true, it is important that the other 'ifs' to detect
+        # errors run first.
 
     # Everything went fine; return the total interactions
     return facebook_json["share"]["share_count"]
@@ -362,8 +392,7 @@ class Command(BaseCommand):
                 post_total_int=total_int,
                 scan_date=timezone.now(),
                 scan_time=timezone.now(),
-                scan_date_ts=int(time.mktime(timezone.localtime(
-                    timezone.now()).timetuple())),
+                scan_date_ts=int(time.time()),
                 original_url=url,
             )
             social_sync.save()

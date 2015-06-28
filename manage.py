@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 MeneScraper is a big data project that monitors the social interactions of Meneame.
 Copyright (C) 2015  Arnau Villoslada
@@ -17,7 +18,6 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 '''
 
-#!/usr/bin/env python
 import os
 import sys
 

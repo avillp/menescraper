@@ -71,9 +71,23 @@ Menescraper - {{ original_url.title }}
 
 {% block content %}
 {% if invalid_form %}
-<div class="alert alert-danger">
+<div class="alert alert-error">
     <button type="button" class="close" data-dismiss="alert">×</button>
-    <strong>Oh snap!</strong> {{ invalid_form|striptags }}
+    <strong>Everybody hates errors but: </strong> {{ invalid_form|striptags }}
+</div>
+{% endif %}
+
+{% if request_facebook_with_facebook %}
+<div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Houston, we have a problem:</strong> If the post is from Facebook, Facebook won't let us to track it :(
+</div>
+{% endif %}
+
+{% if modified_date %}
+<div class="alert alert-success">
+    <button type="button" class="close" data-dismiss="alert">×</button>
+    <strong>Note:</strong> We found no interactions on {{ old_selected_date|date:"d/m/Y" }} so we changed it for you to {{ selected_date|date:"d/m/Y" }}
 </div>
 {% endif %}
 
@@ -94,6 +108,25 @@ Menescraper - {{ original_url.title }}
             </div>
 
         <div class="box-content">
+
+            {% if last_social_sync_datetime %}
+
+            <div class="alert alert-info">
+                <center>
+                    This post was last updated on {{ last_social_sync_datetime|date:"d/m/Y" }} at {{ last_social_sync_datetime|time:"H:i" }}
+                </center>
+            </div>
+
+            {% else %}
+
+            <div class="alert alert-error">
+                <center>
+                    This post didn't get any interactions yet! Check back later.
+                </center>
+            </div>
+
+            {% endif %}
+
             <table class="table table-bordered table-striped">
                 <tr>
                     <td>Title</td>
@@ -130,7 +163,7 @@ Menescraper - {{ original_url.title }}
                 <tr>
                     <td>Publication date</td>
                     <td>
-                        {{ original_url.pub_date }} - {{ original_url.pub_time|date:"H:i" }}
+                        {{ original_url.pub_date|date:"d/m/Y" }} at {{ original_url.pub_time|date:"H:i" }}
                     </td>
                 </tr>
 
@@ -138,7 +171,7 @@ Menescraper - {{ original_url.title }}
                     <td>Front page date</td>
                     <td>
                         {% if original_url.frontpage %}
-                            {{ original_url.frontpage_date }} - {{ original_url.frontpage_time|date:"H:i" }}
+                            {{ original_url.frontpage_date|date:"d/m/Y" }} at {{ original_url.frontpage_time|date:"H:i" }}
 
                         {% else %}
                             Not in frontpage
@@ -157,7 +190,7 @@ Menescraper - {{ original_url.title }}
         <div class="box-header" style="background-color:#FF6400;">
 
             <h2>
-                <a href="#">
+                <a href="#" data-rel="tooltip" title="Not happy with the display date? Change it">
                     <i class="icon-bar-chart btn-setting" style="background-color:#DB5800; text-decoration:none;"></i></a>
                 Interactions of <a href="#" class="btn-setting" data-rel="tooltip" title="Not happy with the display date? Change it" style="color: white;">{{ selected_date|date:"d-m-Y" }}</a>
             </h2>
@@ -258,7 +291,16 @@ function charts() {
 
 
     if (twitter_post.length == 0 && facebook_post.length == 0 && twitter_meneame.length == 0 && facebook_meneame.length == 0)
-        $('#flotchart').html("<center><h1>No data available</h1></center>");
+        $('#flotchart').html(
+            '<center><h1>No data available</h1> \
+            <b>Did you select the right date?</b><br> \
+            You have selected <b>{{ selected_date|date:"m/d/Y" }}</b> \
+            <br><br> \
+            {% if original_url.frontpage %} \
+            This post went to the frontpage on <b>{{ original_url.frontpage_date|date:"m/d/Y" }}<br></b> \
+            {% endif %} \
+            It was posted on <b>{{ original_url.pub_date|date:"m/d/Y" }}</b></center>'
+            );
     else {
         $.plot($("#flotchart"), [{
             label: "Twitter - Post URL",

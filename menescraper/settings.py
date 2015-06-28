@@ -34,7 +34,7 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = [
-    "CONFIGURE-ME: DJango allowed hosts",
+    "CONFIGURE-ME: Django allowed hosts",
     ]
 
 
@@ -99,7 +99,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-STATIC_URL = 'CONFIGURE-ME: DJango static URL'
+STATIC_URL = 'CONFIGURE-ME: Django static URL'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     "django.contrib.auth.context_processors.auth",

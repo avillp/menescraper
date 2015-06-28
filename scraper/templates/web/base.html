@@ -29,7 +29,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
             <title>
                 {% block title %}
-                Menescraper v1.4.1
+                Menescraper v1.4.2
                 {% endblock title %}
             </title>
         <!-- end: Meta -->
@@ -135,7 +135,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
                             {% endblock links_menu %}
 
                             <li>
-                                <a href="#">
+                                <a href="https://github.com/TheDegree0/menescraper/" target="__blank">
                                     <i class="icon-code"></i>
                                     <span class="hidden-tablet">
                                         Code
@@ -160,7 +160,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 
             <footer>
                 <p>
-                    <span style="text-align:left;float:left">&copy; Fancy Footer 2015</span>
+                    <span style="text-align:left;float:left">&copy; Menesc... bah, who cares.</span>
                     <span class="hidden-phone" style="text-align:right;float:right">
                         Hey, guess what? We use cookies. But nobody cares.
                     </span>
@@ -207,7 +207,21 @@ with this program; if not, write to the Free Software Foundation, Inc.,
         <script src="{% static "js/core.min.js" %}"></script>
         <!--<script src="{% static "js/charts.min.js" %}"></script>-->
         <script src="{% static "js/custom.min.js" %}"></script>
-        <!-- end: JavaScript-->
 
+        {% block google_analytics %}
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+            ga('create', 'UA-64485091-1', 'auto');
+            ga('require', 'linkid', 'linkid.js');
+            ga('send', 'pageview');
+
+        </script>
+        {% endblock google_analytics %}
+
+        <!-- end: JavaScript-->
     </body>
 </html>
